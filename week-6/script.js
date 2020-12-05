@@ -1,70 +1,92 @@
-var camera, scene, renderer, mesh
+function main() {
+  const canvas = document.querySelector("canvas")
 
-var dim = 10
-var spacing = (Math.PI * 2) / dim
-var numPoints = dim * dim
-var size = 10
+  const renderer = new THREE.WebGLRenderer({ canvas })
+  const loader = new THREE.TextureLoader()
 
-init()
-animate()
+  renderer.setClearColor(0xffffff, 1)
 
-function init() {
-  camera = new THREE.PerspectiveCamera(
-    70,
-    window.innerWidth / window.innerHeight,
-    1,
+  const camera = new THREE.PerspectiveCamera(
+    40,
+    canvas.clientWidth / canvas.clientHeight,
+    0.1,
     1000
   )
-  camera.position.set(0, 0, 30)
+  camera.position.set(0, 40, 0)
+  camera.up.set(0, 0, 1)
+  camera.lookAt(0, 0, 0)
 
-  scene = new THREE.Scene()
-  var geometry = new THREE.Geometry()
+  const scene = new THREE.Scene()
 
-  const spotlight = new THREE.DirectionalLight(0xffffff, 1)
-  spotlight.position.set(0, 1, 5)
-  scene.add(spotlight)
+  const light = new THREE.PointLight(0xffffff, 1)
+  light.position.set(100, 100, -100)
+  scene.add(light)
 
-  for (var i = 0; i < dim + 1; i++) {
-    var z = size * Math.cos((spacing / 2) * i)
-    var s = size * Math.sin((spacing / 2) * i)
-    for (var j = 0; j < dim; j++) {
-      var x1 = Math.cos(spacing * j) * s
-      var y1 = Math.sin(spacing * j) * s
-      var z1 = z
+  var geometry = new THREE.SphereGeometry(1, 32, 32)
 
-      geometry.vertices.push(new THREE.Vector3(x1, y1, z1))
-    }
-  }
+  const objects = []
 
-  for (let i = dim + 1; i < numPoints + dim; i++) {
-    geometry.faces.push(new THREE.Face3(i, i - 1, i - dim))
-    geometry.faces.push(new THREE.Face3(i - dim - 1, i - dim, i - 1))
-  }
+  const earthOrbit = new THREE.Object3D()
+  scene.add(earthOrbit)
+  objects.push(earthOrbit)
 
-  var material = new THREE.MeshPhongMaterial({
-    wireframe: true,
+  loader.load("2_no_clouds_4k.jpg", (texture) => {
+    const earthMaterial = new THREE.MeshPhongMaterial({
+      color: 0x2233ff,
+      emissive: 0x112244,
+      map: texture,
+    })
+
+    const earthMesh = new THREE.Mesh(geometry, earthMaterial)
+    earthMesh.scale.set(5, 5, 5)
+    earthOrbit.add(earthMesh)
+    objects.push(earthMesh)
   })
-  mesh = new THREE.Mesh(geometry, material)
-  mesh.rotation.y = Math.PI / 2
-  scene.add(mesh)
 
-  renderer = new THREE.WebGLRenderer()
-  renderer.setPixelRatio(window.devicePixelRatio)
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  renderer.setClearColor(0xffffff, 1)
-  document.body.appendChild(renderer.domElement)
-  window.addEventListener("resize", onWindowResize, false)
+  const moonOrbit = new THREE.Object3D()
+  moonOrbit.position.x = 10
+  earthOrbit.add(moonOrbit)
+
+  const moonMaterial = new THREE.MeshPhongMaterial({
+    color: 0x888888,
+    emissive: 0x222222,
+  })
+  const moonMesh = new THREE.Mesh(geometry, moonMaterial)
+  moonOrbit.add(moonMesh)
+  objects.push(moonMesh)
+
+  function resizeRendererToDisplaySize(renderer) {
+    const canvas = renderer.domElement
+    const width = canvas.clientWidth
+    const height = canvas.clientHeight
+    const needResize = canvas.width !== width || canvas.height !== height
+
+    if (needResize) {
+      renderer.setSize(width, height, false)
+    }
+
+    return needResize
+  }
+
+  function render(time) {
+    time *= 0.0002
+
+    if (resizeRendererToDisplaySize(renderer)) {
+      const canvas = renderer.domElement
+      camera.aspect = canvas.clientWidth / canvas.clientHeight
+      camera.updateProjectionMatrix()
+    }
+
+    objects.forEach((obj) => {
+      obj.rotation.y = time
+    })
+
+    renderer.render(scene, camera)
+
+    requestAnimationFrame(render)
+  }
+
+  requestAnimationFrame(render)
 }
 
-function animate() {
-  mesh.rotation.y += 0.01
-  renderer.render(scene, camera)
-
-  requestAnimationFrame(animate)
-}
-
-function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight
-  camera.updateProjectionMatrix()
-  renderer.setSize(window.innerWidth, window.innerHeight)
-}
+main()
