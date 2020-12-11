@@ -11,7 +11,21 @@
     <div id="container"></div>
 
     <script id="vertexShader" type="x-shader/x-vertex">
-      void main() { gl_Position = vec4( position, 1.0 ); }
+      uniform highp float time;
+
+      mat4 scale = mat4(1.0, 0.0, 0.0, 0.0,
+        0.0, 0.25, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0);
+
+      void main() {
+        float displacementHeight = 1.0;
+        float displacementY = sin(time + (position.x) * 5.2) * displacementHeight;
+
+        vec4 modifiedPosition = vec4(position, 1.0);
+        modifiedPosition.y += displacementY;
+        gl_Position = modifiedPosition * scale;
+      }
     </script>
 
     <script id="fragmentShader" type="x-shader/x-fragment">
@@ -21,49 +35,9 @@
       uniform vec2 mouse;
       uniform highp float time;
 
-      float square(vec2 pos, float size) {
-        vec2 normCoords = gl_FragCoord.xy / resolution;
-
-        float aspect = resolution.x / resolution.y;
-        size *= 0.1;
-
-        if (length((normCoords.x - pos.x) * aspect) < size &&
-            length(normCoords.y - pos.y) < size) {
-          return 1.0;
-        } else {
-          return 0.;
-        }
-      }
-
-      float line(vec2 normalised_Coordinate, float funct) {
-        return step(funct, normalised_Coordinate.y) -
-               step(funct, normalised_Coordinate.y - 0.01);
-      }
-
-      float circle(vec2 pos, float size) {
-        size = 1. / size;
-        size *= 10.;
-        float aspect = resolution.x / resolution.y;
-
-        vec2 normCoord = vec2(gl_FragCoord.x / (resolution.x) * aspect,
-                              gl_FragCoord.y / resolution.y);
-
-        float colour = distance(normCoord, pos);
-        return smoothstep(colour * size, colour * size + 0.02, 1.0);
-      }
-
-      void main(void) {
-        vec2 normres = (gl_FragCoord.xy / resolution.xy);
-
-        vec2 pos = vec2(0.5) - normres;
-
-        float size = abs(sin(time)) / 2.;
-        vec3 colour = vec3(0.0);
-
-        if (length(pos.x) < size && length(pos.y) < size)
-          colour = vec3(0.0, 0.5, 1.0);
-
-        gl_FragColor = vec4(vec3(colour), 1.0);
+      void main(){
+        vec2 norm_res = vec2(gl_FragCoord.xy / resolution);
+        gl_FragColor = vec4(norm_res.x, norm_res.y, 0.0, 1.0);
       }
     </script>
   </body>

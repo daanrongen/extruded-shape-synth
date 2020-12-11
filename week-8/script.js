@@ -7,10 +7,17 @@ init()
 animate()
 
 function init() {
-  camera = new THREE.Camera()
-  camera.position.z = 1
+  container = document.getElementById("container")
+  camera = new THREE.PerspectiveCamera(
+    70,
+    window.innerWidth / window.innerHeight,
+    1,
+    1000
+  )
+  camera.position.set(0, 0, 4)
   scene = new THREE.Scene()
-  var geometry = new THREE.PlaneBufferGeometry(2, 2, 50, 50)
+
+  var geometry = new THREE.SphereGeometry(1, 100, 100)
 
   uniforms = {
     time: { type: "f", value: 1.0 },
@@ -29,21 +36,11 @@ function init() {
 
   renderer = new THREE.WebGLRenderer()
   renderer.setPixelRatio(window.devicePixelRatio / pixel_resolution)
-  document.body.appendChild(renderer.domElement)
+  container.appendChild(renderer.domElement)
 
   onWindowResize()
   window.addEventListener("resize", onWindowResize, false)
   window.addEventListener("mousemove", onMouseMove, false)
-}
-
-function animate() {
-  requestAnimationFrame(animate)
-  render()
-}
-
-function render() {
-  uniforms.time.value += 0.01
-  renderer.render(scene, camera)
 }
 
 function onWindowResize(event) {
@@ -52,7 +49,17 @@ function onWindowResize(event) {
   uniforms.resolution.value.y = renderer.domElement.height
 }
 
+function animate() {
+  requestAnimationFrame(animate)
+  render()
+}
+
 function onMouseMove(event) {
   uniforms.mouse.value.x = 2 * (event.clientX / window.innerWidth)
   uniforms.mouse.value.y = 2 * (1 - event.clientY / window.innerHeight)
+}
+
+function render() {
+  uniforms.time.value += 0.01
+  renderer.render(scene, camera)
 }
