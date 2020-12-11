@@ -1,6 +1,7 @@
 function main() {
   const canvas = document.querySelector("canvas")
   const renderer = new THREE.WebGLRenderer({ canvas })
+  // const loader = new THREE.TextureLoader()
 
   const camera = new THREE.PerspectiveCamera(
     40,
@@ -24,6 +25,7 @@ function main() {
     new THREE.SphereGeometry(1, 32, 32),
     new THREE.MeshPhongMaterial({
       color: 0x2233ff,
+      // map: loader.load("2_no_clouds_4k.jpg"),
       emissive: 0x112244,
     })
   )

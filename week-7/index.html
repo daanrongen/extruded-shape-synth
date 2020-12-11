@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/109/three.min.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Creative Coding</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="container"></div>
+
+    <script id="vertexShader" type="x-shader/x-vertex">
+      void main() { gl_Position = vec4( position, 1.0 ); }
+    </script>
+
+    <script id="fragmentShader" type="x-shader/x-fragment">
+      precision mediump float;
+
+      uniform vec2 resolution;
+      uniform vec2 mouse;
+      uniform highp float time;
+
+      float square(vec2 pos, float size) {
+        vec2 normCoords = gl_FragCoord.xy / resolution;
+
+        float aspect = resolution.x / resolution.y;
+        size *= 0.1;
+
+        if (length((normCoords.x - pos.x) * aspect) < size &&
+            length(normCoords.y - pos.y) < size) {
+          return 1.0;
+        } else {
+          return 0.;
+        }
+      }
+
+      float line(vec2 normalised_Coordinate, float funct) {
+        return step(funct, normalised_Coordinate.y) -
+               step(funct, normalised_Coordinate.y - 0.01);
+      }
+
+      float circle(vec2 pos, float size) {
+        size = 1. / size;
+        size *= 10.;
+        float aspect = resolution.x / resolution.y;
+
+        vec2 normCoord = vec2(gl_FragCoord.x / (resolution.x) * aspect,
+                              gl_FragCoord.y / resolution.y);
+
+        float colour = distance(normCoord, pos);
+        return smoothstep(colour * size, colour * size + 0.02, 1.0);
+      }
+
+      void main(void) {
+        vec2 normres = (gl_FragCoord.xy / resolution.xy);
+
+        vec2 pos = vec2(0.5) - normres;
+
+        float size = abs(sin(time)) / 2.;
+        vec3 colour = vec3(0.0);
+
+        if (length(pos.x) < size && length(pos.y) < size)
+          colour = vec3(0.0, 0.5, 1.0);
+
+        gl_FragColor = vec4(vec3(colour), 1.0);
+      }
+    </script>
+  </body>
+
+  <script type="text/javascript" src="script.js"></script>
+</html>
