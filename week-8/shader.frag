@@ -1,12 +1,12 @@
 precision highp float;
+
 varying vec3 myNormal;
 
 void main() {
+  vec3 light = vec3(0.0, 40.0, 0.);
+  light = normalize(light);
 
-  myNormal = normal;
+  float prod = dot(myNormal, light);
 
-  // vec3 newPosition = position + normal;
-
-  gl_Position = projectionMatrix * modelViewMatrix *
-                vec4(position + (normal * 0.01), 2.0);
+  gl_FragColor = vec4(prod, prod, prod, 1.0);
 }
