@@ -1,12 +1,21 @@
-precision highp float;
+precision mediump float;
 
-varying vec3 myNormal;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform highp float time;
+
+float rand(vec2 pos) {
+  return sin(sin(dot(pos, vec2(mouse * 100000.))) * mouse.x * 10000000.);
+}
 
 void main() {
-  vec3 light = vec3(0.0, 40.0, 0.);
-  light = normalize(light);
+  vec2 pos = gl_FragCoord.xy / resolution;
+  vec2 intPart = vec2(0.);
+  vec2 floatPart = vec2(0.);
 
-  float prod = dot(myNormal, light);
+  floatPart = fract(pos);
 
-  gl_FragColor = vec4(prod, prod, prod, 1.0);
+  vec3 colour = vec3(rand(floatPart));
+
+  gl_FragColor = vec4(colour, 1.0);
 }

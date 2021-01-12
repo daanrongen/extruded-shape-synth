@@ -11,7 +11,7 @@ function init() {
   camera.position.set(0, 0, 1)
   scene = new THREE.Scene()
 
-  var geometry = new THREE.SphereBufferGeometry(1, 1, 100, 100)
+  var geometry = new THREE.PlaneBufferGeometry(2, 2)
 
   uniforms = {
     u_time: { type: "f", value: 1.0 },
