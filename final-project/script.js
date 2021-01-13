@@ -35,7 +35,7 @@ function main() {
   renderer = new THREE.WebGLRenderer({ canvas, alpha: true })
   scene = new THREE.Scene()
 
-  camera = new THREE.PerspectiveCamera(50, width / height, 2, 100)
+  camera = new THREE.PerspectiveCamera(50, width / height, 1, 100)
   camera.position.set(0, 0, 5)
   camera.up.set(0, 0, 1)
   camera.lookAt(0, 0, 0)
@@ -66,19 +66,47 @@ render = () => {
 }
 
 drawCircle = ({ x, y, z }, r, s) => {
-  console.log(x, y, z)
-
-  var material = new THREE.MeshBasicMaterial({
+  let material = new THREE.MeshBasicMaterial({
     color: 0x0000ff,
     wireframe: true,
   })
 
-  var circleGeometry = new THREE.CircleGeometry(r, s)
-  var circle = new THREE.Mesh(circleGeometry, material)
+  let circleGeometry = new THREE.CircleGeometry(r, s)
+  let circle = new THREE.Mesh(circleGeometry, material)
   circle.position.set(x, y, z)
   circle.rotation.set(0, 5, 0)
 
+  circles.push({ circleGeometry, x, y, z })
   scene.add(circle)
+}
+
+drawCylinder = (c1, c2) => {
+  //   console.log(c1, c2)
+  let material = new THREE.MeshBasicMaterial({
+    color: 0x00ff00,
+    wireframe: true,
+  })
+
+  let geometry = new THREE.Geometry()
+
+  c1.circleGeometry.vertices.map((vertex, index) => {
+    geometry.vertices.push(
+      new THREE.Vector3(vertex.x + c1.x, vertex.y + c1.y, vertex.z + c1.z)
+    )
+  })
+
+  c2.circleGeometry.vertices.map((vertex, index) => {
+    geometry.vertices.push(
+      new THREE.Vector3(vertex.x + c2.x, vertex.y + c2.y, vertex.z + c2.z)
+    )
+  })
+
+  console.log(geometry)
+
+  geometry.faces.push(new THREE.Face3(2, 7, 1))
+
+  const cylinder = new THREE.Mesh(geometry, material)
+  scene.add(cylinder)
 }
 
 addLine = (geometry, positions, color) => {
@@ -86,7 +114,7 @@ addLine = (geometry, positions, color) => {
   drawCount = 2
   geometry.setDrawRange(0, drawCount)
 
-  var material = new THREE.LineBasicMaterial({ color })
+  let material = new THREE.LineBasicMaterial({ color })
   line = new THREE.Line(geometry, material)
 
   scene.add(line)
@@ -123,13 +151,17 @@ onMouseDown = (event) => {
   currentPos.unproject(camera)
   posArray.push(currentPos)
 
-  drawCircle(currentPos, 0.5, 8)
+  drawCircle(currentPos, 0.5, 4)
 
   canvas.addEventListener("mousemove", onMouseMove, false)
   canvas.addEventListener("mouseup", onMouseUp, false)
 }
 
 onMouseUp = (event) => {
+  if (circles.length == 2) {
+    drawCylinder(circles[0], circles[1])
+  }
+
   canvas.removeEventListener("mousemove", onMouseMove, false)
 }
 
