@@ -7,88 +7,122 @@
  *
  * custom geometry:
  * https://threejsfundamentals.org/threejs/lessons/threejs-custom-geometry.html
+ *
+ * draw line dynamically:
+ * https://jsfiddle.net/wilt/a21ey9y6/
  */
 
 var canvas, renderer, camera, light, scene
 var width = window.innerWidth
 var height = window.innerHeight
 
+var mouse = new THREE.Vector3()
+var mouseDown = false
+
+var line
+var drawCount
+var posArray = []
+
 function main() {
   canvas = document.querySelector("canvas")
+  //   canvas.addEventListener("mousemove", onMouseMove, false)
+  canvas.addEventListener("mousedown", onMouseDown, false)
+  //   canvas.addEventListener("mouseup", onMouseUp, false)
   canvas.width = width
   canvas.height = height
-  const objects = []
 
   renderer = new THREE.WebGLRenderer({ canvas, alpha: true })
+  scene = new THREE.Scene()
 
-  camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000)
-  camera.position.set(0, 0, 10)
+  camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100)
+  camera.position.set(0, 0, 5)
   camera.up.set(0, 0, 1)
   camera.lookAt(0, 0, 0)
-
-  scene = new THREE.Scene()
 
   light = new THREE.PointLight(0xffffff, 1)
   light.position.set(10, 10, 10)
   scene.add(light)
 
-  const geometry = new THREE.Geometry()
-  geometry.vertices.push(
-    new THREE.Vector3(-1, -1, 1), // 0
-    new THREE.Vector3(1, -1, 1), // 1
-    new THREE.Vector3(-1, 1, 1), // 2
-    new THREE.Vector3(1, 1, 1), // 3
-    new THREE.Vector3(-1, -1, -1), // 4
-    new THREE.Vector3(1, -1, -1), // 5
-    new THREE.Vector3(-1, 1, -1), // 6
-    new THREE.Vector3(1, 1, -1) // 7
-  )
+  //   const customPts = []
+  //   customPts.push(new THREE.Vector3(0, 0, 0.3))
+  //   customPts.push(new THREE.Vector3(0.2, 0.3, 0.3))
+  //   customPts.push(new THREE.Vector3(0, 0.5, 0.5))
 
-  geometry.faces.push(
-    // front
-    new THREE.Face3(0, 3, 2),
-    new THREE.Face3(0, 1, 3),
-    // right
-    new THREE.Face3(1, 7, 3),
-    new THREE.Face3(1, 5, 7),
-    // back
-    new THREE.Face3(5, 6, 7),
-    new THREE.Face3(5, 4, 6),
-    // left
-    new THREE.Face3(4, 2, 6),
-    new THREE.Face3(4, 0, 2),
-    // top
-    new THREE.Face3(2, 7, 6),
-    new THREE.Face3(2, 3, 7),
-    // bottom
-    new THREE.Face3(4, 1, 0),
-    new THREE.Face3(4, 5, 1)
-  )
+  //   const customShape = new THREE.Shape(customPts)
+  //   addShape(customShape, 0x0000ff, 0, 0, 0, 1)
+  //   addLine(customShape, 0x0000ff, 0, 0, 0, 1)
 
-  geometry.computeFaceNormals()
+  var geometry = new THREE.BufferGeometry()
+  var positions = new Float32Array(500 * 3)
+  addLine(geometry, positions, 0x0000ff)
 
-  const material = new THREE.MeshPhongMaterial({
-    color: 0x0000ff,
-    // wireframe: true,
-    // wireframeLinewidth: 2,
-  })
-  const shape = new THREE.Mesh(geometry, material)
-  objects.push(shape)
+  updatePositions()
+  requestAnimationFrame(render)
+}
 
-  function render(time) {
-    time *= 0.0002
+render = (time) => {
+  renderer.render(scene, camera)
 
-    objects.forEach((obj) => {
-      obj.rotation.y = time
-      obj.rotation.z = time
-      scene.add(obj)
-    })
-
-    renderer.render(scene, camera)
-    requestAnimationFrame(render)
-  }
+  drawCount = posArray.length
+  line.geometry.setDrawRange(0, drawCount)
+  line.geometry.attributes.position.needsUpdate = true
+  updatePositions()
 
   requestAnimationFrame(render)
+}
+
+addLine = (geometry, positions, color) => {
+  geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3))
+  drawCount = 2
+  geometry.setDrawRange(0, drawCount)
+
+  var material = new THREE.LineBasicMaterial({ color })
+  line = new THREE.Line(geometry, material)
+  scene.add(line)
+
+  addShape(geometry, positions, color)
+}
+
+addShape = (geometry, positions, color) => {
+  const shape = new THREE.Shape()
+}
+
+updatePositions = () => {
+  var positions = line.geometry.attributes.position.array
+  var index = 0
+
+  for (let i = 0; i < posArray.length; i++) {
+    positions[index++] = posArray[i].x
+    positions[index++] = posArray[i].y
+    positions[index++] = posArray[i].z
+  }
+}
+
+onMouseMove = (event) => {
+  if (renderer) {
+    mouse.x = (event.clientX / width) * 2 - 1
+    mouse.y = -(event.clientY / height) * 2 + 1
+    var currentPos = new THREE.Vector3(mouse.x, mouse.y, 0)
+
+    currentPos.unproject(camera)
+    posArray.push(currentPos)
+  }
+}
+
+onMouseDown = (event) => {
+  var x = (event.clientX / width) * 2 - 1
+  var y = -(event.clientY / height) * 2 + 1
+
+  var currentPos = new THREE.Vector3(x, y, 0)
+  currentPos.unproject(camera)
+  posArray.push(currentPos)
+
+  document.addEventListener("mousemove", onMouseMove, false)
+  document.addEventListener("mouseup", onMouseUp, false)
+}
+
+onMouseUp = (event) => {
+  document.removeEventListener("mousemove", onMouseMove, false)
 }
 
 main()
