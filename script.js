@@ -59,8 +59,18 @@ function main() {
     myClock.ticker()
 
     if (myClock.tick && playMelody) {
-      runSynths()
+      runSynths(counter)
       counter++
+
+      if (counter > 3) {
+        tones[0] = 0
+        playMelody = false
+
+        counter = 0
+        runSynths(counter)
+      }
+
+      console.log(counter)
     }
 
     let oscillator = carrier.sinewave(frequency.x * Math.cos(frequency.y))
@@ -115,9 +125,9 @@ drawShape = (r, s) => {
       Math.random() * (Math.floor(max) - Math.ceil(min)) + Math.ceil(min)
     )
 
-  let red = randomValue(100, 220)
-  let green = randomValue(100, 220)
-  let blue = randomValue(100, 220)
+  let red = randomValue(50, 255)
+  let green = randomValue(50, 255)
+  let blue = randomValue(50, 255)
 
   color = new THREE.Color(`rgb(${red}, ${green}, ${blue})`)
 
@@ -179,7 +189,8 @@ onMouseUp = () => {
   canvas.removeEventListener("mousemove", onMouseMove, false)
 }
 
-runSynths = () => {
+runSynths = (counter) => {
+  console.log(counter, playMelody)
   synth.saw = true
   synth.frequency = tones[counter]
   synth.cutoff = 500
