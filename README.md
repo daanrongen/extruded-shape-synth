@@ -23,7 +23,7 @@ The function would then draw the two-dimensional shape positioned along the cent
 The next step would be to draw faces from these vertices. Each vertex of the first shape would be connected to vertices of the second shape to create triangular faces in order to complete the the three-dimensional shape (similar to a cylinder or hexagonal prism). Every time a new mouse-position comes in (by clicking the next point), this method would repeat but with the last shape placed, iteratively extending the mesh.
 
 <img align="left" width="50%" height="50%" src="assets/sketchbook1.jpeg">
-<img align="left" width="50%" height="50%" src="assets/sketchbook2.jpeg">
+<img align="right" width="50%" height="50%" src="assets/sketchbook2.jpeg">
 
 However, this approach was not successful. I took a new approach in which I made Three.js do this part of mathematics for me. This approach uses an `ExtrudeBufferGeometry` with a `CatmullRomCurve` to create a custom `extrudePath`.
 
