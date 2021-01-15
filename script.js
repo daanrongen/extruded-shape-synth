@@ -17,7 +17,7 @@ var maxiAudio = new maximJs.maxiAudio()
 maxiAudio.outputIsArray(true, 2)
 
 var myClock = new maximJs.maxiClock()
-myClock.setTempo(80)
+myClock.setTempo(120)
 myClock.setTicksPerBeat(4)
 var settings = new maximJs.maxiSettings()
 settings.sampleRate = 44100
