@@ -162,8 +162,8 @@ onMouseDown = (event) => {
   mouse.z = 0
 
   points = new Array()
-  let currentPos = new THREE.Vector3(mouse.x, mouse.y, mouse.z)
-  points.push(currentPos)
+  // let currentPos =
+  points.push(new THREE.Vector3(mouse.x, mouse.y, mouse.z))
 
   canvas.addEventListener("mousemove", onMouseMove, false)
   canvas.addEventListener("mouseup", onMouseUp, false)
