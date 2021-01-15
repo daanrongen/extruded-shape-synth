@@ -133,7 +133,7 @@ drawShape = (r, s) => {
 
   tones = [randomValue(200, 500), randomValue(200, 500), randomValue(200, 500)]
 
-  let material = new THREE.MeshPhongMaterial({ color })
+  let material = new THREE.MeshStandardMaterial({ color })
   var mesh = new THREE.Mesh(geometry, material)
 
   shapes.push(mesh)
