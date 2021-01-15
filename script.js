@@ -1,4 +1,4 @@
-var canvas, renderer, camera, light, scene
+var canvas, renderer, camera, light, scene, list
 var width = window.innerWidth
 var height = window.innerHeight
 
@@ -22,13 +22,13 @@ myClock.setTicksPerBeat(4)
 var settings = new maximJs.maxiSettings()
 settings.sampleRate = 44100
 
-var drawOutput = new Array(1024)
 var counter = 0
 
 var carrier = new maximJs.maxiOsc()
 var frequency = new THREE.Vector2()
 
 var color
+var playMelody = false
 
 function main() {
   canvas = document.querySelector("canvas")
@@ -37,7 +37,9 @@ function main() {
   canvas.width = width
   canvas.height = height
 
-  renderer = new THREE.WebGLRenderer({ canvas, alpha: false })
+  list = document.getElementById("marqueeList")
+
+  renderer = new THREE.WebGLRenderer({ canvas, alpha: true })
   renderer.setPixelRatio(window.devicePixelRatio)
   renderer.setSize(width, height)
   scene = new THREE.Scene()
@@ -56,9 +58,8 @@ function main() {
   maxiAudio.play = () => {
     myClock.ticker()
 
-    if (myClock.tick) {
-      runSynths(counter)
-
+    if (myClock.tick && playMelody) {
+      runSynths()
       counter++
     }
 
@@ -71,15 +72,16 @@ function main() {
   requestAnimationFrame(render)
 }
 
-render = (time) => {
-  time *= 0.0001
+render = () => {
   renderer.render(scene, camera)
 
-  camera.position.set(currentPos.x, currentPos.y, 5)
+  if (resizeRendererToDisplaySize(renderer)) {
+    const canvas = renderer.domElement
+    camera.aspect = canvas.clientWidth / canvas.clientHeight
+    camera.updateProjectionMatrix()
+  }
 
-  // shapes.forEach((shape) => {
-  //   const rotation = time
-  // })
+  camera.position.set(currentPos.x, currentPos.y, 5)
 
   requestAnimationFrame(render)
 }
@@ -113,12 +115,13 @@ drawShape = (r, s) => {
       Math.random() * (Math.floor(max) - Math.ceil(min)) + Math.ceil(min)
     )
 
-  color = new THREE.Color(
-    `rgb(${randomValue(0, 255)}, ${randomValue(0, 255)}, ${randomValue(
-      0,
-      255
-    )})`
-  )
+  let red = randomValue(100, 220)
+  let green = randomValue(100, 220)
+  let blue = randomValue(100, 220)
+
+  color = new THREE.Color(`rgb(${red}, ${green}, ${blue})`)
+
+  tones = [randomValue(200, 500), randomValue(200, 500), randomValue(200, 500)]
 
   let material = new THREE.MeshPhongMaterial({ color })
   var mesh = new THREE.Mesh(geometry, material)
@@ -126,13 +129,7 @@ drawShape = (r, s) => {
   shapes.push(mesh)
   scene.add(mesh)
 
-  counter = 0
-
-  tones.push(
-    randomValue(200, 500),
-    randomValue(200, 500),
-    randomValue(200, 500)
-  )
+  addColor(red, green, blue)
 }
 
 onMouseMove = (event) => {
@@ -162,7 +159,6 @@ onMouseDown = (event) => {
   mouse.z = 0
 
   points = new Array()
-  // let currentPos =
   points.push(new THREE.Vector3(mouse.x, mouse.y, mouse.z))
 
   canvas.addEventListener("mousemove", onMouseMove, false)
@@ -171,6 +167,7 @@ onMouseDown = (event) => {
 
 onMouseUp = () => {
   drawShape(0.05, 32)
+  playMelody = true
 
   frequency.x = 0
   frequency.y = 0
@@ -182,11 +179,42 @@ onMouseUp = () => {
   canvas.removeEventListener("mousemove", onMouseMove, false)
 }
 
-runSynths = (playHead) => {
+runSynths = () => {
   synth.saw = true
-  synth.frequency = tones[playHead]
+  synth.frequency = tones[counter]
   synth.cutoff = 500
   synth.adsr.trigger = 1
+}
+
+addColor = (r, g, b) => {
+  let li = document.createElement("li")
+  li.id = `li-${shapes.length}`
+  let div = document.createElement("div")
+  let circle = document.createElement("span")
+  circle.innerHTML = "⬤ "
+  circle.style.color = `rgb(${r}, ${g}, ${b})`
+  let text = document.createElement("span")
+  text.innerHTML = `rgb(${r}, ${g}, ${b})`
+
+  div.appendChild(circle)
+  div.appendChild(text)
+  li.appendChild(div)
+
+  list.appendChild(li)
+}
+
+resizeRendererToDisplaySize = (renderer) => {
+  const canvas = renderer.domElement
+  const pixelRatio = window.devicePixelRatio
+  const width = (canvas.clientWidth * pixelRatio) | 0
+  const height = (canvas.clientHeight * pixelRatio) | 0
+  const needResize = canvas.width !== width || canvas.height !== height
+
+  if (needResize) {
+    renderer.setSize(width, height, false)
+  }
+
+  return needResize
 }
 
 window.onload = main

@@ -1,4 +1,4 @@
-# Extruded Shapes
+# Extruded Shape Synth
 
 - Lecturer: Mick Grierson
 - Student: Daan Rongen
